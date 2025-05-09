@@ -1,21 +1,23 @@
 async function buscarUsuarios() {
   try {
-    const response = await fetch('../js/db.json');
-    if (!response.ok) throw new Error("Erro ao carregar db.json");
+    const response = await fetch('http://localhost:3000/usuarios');
+    if (!response.ok) throw new Error("Erro ao carregar usuários");
     return await response.json();
   } catch (error) {
     console.error("Erro:", error);
-    return { usuarios: [] };
+    return [];
   }
 }
 
 async function salvarUsuario(novoUsuario) {
   try {
-    const usuarios = (await buscarUsuarios()).usuarios || [];
-    usuarios.push(novoUsuario);
-
-    // Simulação de salvar no banco (substitua por uma API real)
-    console.log("Usuário salvo:", novoUsuario);
+    const response = await fetch('http://localhost:3000/usuarios', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(novoUsuario)
+    });
+    if (!response.ok) throw new Error("Erro ao salvar usuário");
+    console.log("Usuário salvo:", await response.json());
   } catch (error) {
     console.error("Erro ao salvar usuário:", error);
   }
@@ -23,13 +25,13 @@ async function salvarUsuario(novoUsuario) {
 
 // Botão Cancela
 document.getElementById('btnCancela')?.addEventListener('click', () => {
-  window.location.href = 'index.html'; // Use './' para indicar o caminho relativo
+  window.location.href = 'index.html';
 });
 
 // Formulário
 document.getElementById('formCadastro')?.addEventListener('submit', async (e) => {
   e.preventDefault();
-  const usuarios = (await buscarUsuarios()).usuarios || [];
+  const usuarios = await buscarUsuarios();
 
   const nome = document.getElementById('nome').value.trim();
   const email = document.getElementById('email').value.trim();
@@ -65,7 +67,7 @@ document.getElementById('formCadastro')?.addEventListener('submit', async (e) =>
   }
 
   // Salvar novo usuário
-  const novoUsuario = { id: usuarios.length + 1, nome, email, senha };
+  const novoUsuario = { nome, email, senha };
   await salvarUsuario(novoUsuario);
 
   alert("Cadastro realizado com sucesso!");
